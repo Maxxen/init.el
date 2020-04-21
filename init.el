@@ -205,6 +205,15 @@
   :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
 
+(use-package irony
+  :ensure t
+  :hook ((c++-mode . irony-mode)
+	 (c-mode . irony-mode)
+	 (irony-mode . irony-cdb-autosetup-compile-options)))
+
+(use-package company-irony
+  :ensure t
+  :config (add-to-list 'company-backends 'company-irony))
 
 ;; CUSTOM SETTINGS
 (custom-set-variables
@@ -223,14 +232,14 @@
  '(linum-format " %7i ")
  '(package-selected-packages
    (quote
-    (rust-mode toml-mode cargo flycheck-rust python-docstring sublime-themes lsp-ui flycheck company-lsp lsp-mode ess diminish irony which-key use-package popup-kill-ring hungry-delete eziam-theme company cloud-theme)))
+    (company-irony jinja2-mode web-mode json-mode rust-mode toml-mode cargo flycheck-rust python-docstring sublime-themes lsp-ui flycheck company-lsp lsp-mode ess diminish irony which-key use-package popup-kill-ring hungry-delete eziam-theme company cloud-theme)))
  '(python-shell-interpreter "python3"))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:foundry "ADBO" :family "Source Code Pro")))))
+ '(default ((t (:family "Inconsolata")))))
 
 ;;'(ido-subdir ((t (:foreground "#2f7e9d")))))
 
