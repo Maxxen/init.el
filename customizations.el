@@ -15,8 +15,9 @@
  '(linum-format " %7i ")
  '(package-selected-packages
    (quote
-    (flycheck-irony company-irony jinja2-mode web-mode json-mode rust-mode toml-mode cargo flycheck-rust python-docstring sublime-themes lsp-ui flycheck company-lsp lsp-mode ess diminish irony which-key use-package popup-kill-ring hungry-delete eziam-theme company cloud-theme)))
- '(python-shell-interpreter "python3"))
+    (ivy org-ref flycheck-irony company-irony jinja2-mode web-mode json-mode rust-mode toml-mode cargo flycheck-rust python-docstring sublime-themes lsp-ui flycheck company-lsp lsp-mode ess diminish irony which-key use-package popup-kill-ring hungry-delete eziam-theme company cloud-theme)))
+ '(python-shell-interpreter "python3")
+ '(tramp-syntax (quote simplified) t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

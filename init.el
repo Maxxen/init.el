@@ -115,10 +115,19 @@
 
 
 
+
 ;; Org-mode tweaks
+(setq org-confirm-babel-evaluate nil
+      org-src-fontify-natively t
+      org-src-tab-acts-natively t
+      org-support-shift-select t)
+
+(org-babel-do-load-languages 'org-babel-load-languages '((C . t)
+							 (python . t)))
+
 (global-set-key (kbd "\C-c a") 'org-agenda)
 (setq org-agenda-dim-blocked-tasks t)
-
+(setq org-agenda-files '("~/org/organizer.org" "~/org/notes/"))
 (setq org-todo-keywords
   '((sequence "TODO(t)" "IN-PROGRESS(i)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
 
@@ -129,21 +138,54 @@
 (setq org-enforce-todo-checkbox-dependencies t)
 (setq org-completion-use-ido t)
 
-(global-set-key (kbd "C-c o") 
-                (lambda () (interactive) (find-file "~/org/organizer.org")))
-
-(setq org-default-notes-file "~/org/organizer.org")
+(global-set-key (kbd "C-c o") (lambda () (interactive) (find-file "~/org/organizer.org")))
 
 (global-set-key (kbd "\C-c c") 'org-capture)
 
+;; Create a new file for notes
+(defun note/generate-org-note-name ()
+  (setq note--name (read-string "Name: "))
+  (setq note--time (format-time-string "%Y-%m-%d"))
+  (setq note--filename
+	(expand-file-name (format "%s-%s.org"
+				  note--time
+				  (replace-regexp-in-string " " "-" (downcase note--name)))
+			  "~/org/notes/")))
+
+
+;; Delete note file if aborted!
+(defun note/delete-note-on-abort ()
+  (let ((key (plist-get org-capture-plist :key)))
+    (if (and org-note-abort (equal key "n"))
+	(delete-file note--filename))))
+
+(add-hook 'org-capture-after-finalize-hook 'note/delete-note-on-abort)
+
+(setq org-default-notes-file "~/org/organizer.org")
+(setq org-capture-templates
+      '(("t" "TODO" entry
+	 (file+headline "~/org/organizer.org" "Tasks")
+	 "* TODO %?\n  %i\n  %a")
+	("n" "Note" plain 
+	 (file note/generate-org-note-name)
+	 "#+TITLE: %((lambda () note--name))\n#+CATEGORY: Notes\n \n%U\n\n* %((lambda () note--name)) %^G\n\n%?")))
 
 (use-package org-cliplink
-  :ensure t)
+  :ensure t
+  :config (global-set-key (kbd "C-c p") 'org-cliplink))
 
 (use-package org-download
   :ensure t
   :config (setq-default org-download-image-dir "~/org/images/")
   :hook (dired-mode . org-download-enable))
+
+(use-package org-ref
+  :ensure t
+  :config
+  (setq reftex-default-bibliography '("~/org/bibliography/references.bib"))
+  (setq org-ref-bibliography-notes "~/org/bibliography/notes.org"
+	org-ref-default-bibliography '("~/org/bibliography/references.bib")
+	org-ref-pdf-directory "/org/bibliography/bibtex-pdfs/"))
 
 ;; Which key
 ;; - Shows C-x - completions in minibuffer
