@@ -1,5 +1,4 @@
 
-
 ;; Add custom theme path
 ;;(let ((basedir "~/.emacs.d/themes/"))
 ;;  (dolist (f (directory-files basedir))
@@ -234,6 +233,11 @@
 (use-package flycheck-rust
   :ensure t
   :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+
+
+;; Tramp settings
+(setq tramp-default-method "ssh")
+(customize-set-variable 'tramp-syntax 'simplified)
 
 
 (use-package irony
