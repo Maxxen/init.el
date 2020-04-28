@@ -6,6 +6,8 @@
 ;;	     (file-directory-p (concat basedir f)))
 ;;	(add-to-list 'custom-theme-load-path (concat basedir f)))))
 
+;;; Code:
+
 ;; Disable GUI elements
 (tool-bar-mode -1)
 (menu-bar-mode -1)
@@ -22,6 +24,18 @@
 
 ;; Stop at subwords when jumping with C/M-<arrow>
 (global-subword-mode t)
+
+;; Prevent mini-buffer from getting stuck if focus is lost
+(defun stop-using-minibuffer ()
+  "Kill the minibuffer."
+  (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
+    (abort-recursive-edit)))
+
+(add-hook 'mouse-leave-buffer-hook 'stop-using-minibuffer)
+
+
+;; Tab width
+(setq-default tab-width 4)
 
 ;; Electric pair mode
 ;; electric pairs
@@ -298,6 +312,14 @@
   :ensure t
   :config (eval-after-load 'flycheck
 	    '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup)))
+
+
+(use-package web-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.php\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode)))
 
 
 ;; Load saved customizations from custom file
