@@ -122,12 +122,17 @@
 	     '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
+
+
+;; C-style
+
+(setq c-default-style "stroustrup"
+	  c-basic-offset 4)
+
 ;; Set up use-package
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-
-
 
 
 ;; Org-mode tweaks
@@ -244,8 +249,12 @@
 ;; Flycheck
 (use-package flycheck
   :ensure t
-  :init (global-flycheck-mode))
+  :init (global-flycheck-mode)
+  :config (setq flycheck-check-syntax-automatically '(mode-enabled save)))
 
+
+(add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
+(add-hook 'c++-mode-hook (lambda () (setq flycheck-clang-language-standard "c++11")))
 
 ;; Language Server Protocol
 (use-package lsp-mode
@@ -308,11 +317,6 @@
   :ensure t
   :config (add-to-list 'company-backends 'company-irony))
 
-(use-package flycheck-irony
-  :ensure t
-  :config (eval-after-load 'flycheck
-	    '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup)))
-
 
 (use-package web-mode
   :ensure t
@@ -321,6 +325,9 @@
   (add-to-list 'auto-mode-alist '("\\.php\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode)))
 
+
+(use-package zig-mode
+  :ensure t)
 
 ;; Load saved customizations from custom file
 (load-file custom-file)
