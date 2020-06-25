@@ -331,3 +331,9 @@
 
 ;; Load saved customizations from custom file
 (load-file custom-file)
+
+
+;; Tex
+(setq TeX-parse-self t)
+(setq TeX-auto-save t)
+(setq-default TeX-master nil)
