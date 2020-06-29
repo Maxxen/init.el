@@ -13,6 +13,9 @@
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
 
+;; Lock-files are not really neccessary
+(setq create-lockfiles nil)
+
 ;; Remove startup screen
 (setq inhibit-startup-message t)
 
@@ -123,6 +126,11 @@
 (package-initialize)
 
 
+;; Theme
+(use-package vscode-dark-plus-theme
+  :config
+  (load-theme 'vscode-dark-plus t))
+
 
 ;; C-style
 
@@ -232,6 +240,14 @@
   (setq company-idle-delay 0)
   (setq company-minimum-prefix-length 3))
 
+(use-package company-quickhelp
+  :ensure t
+  :init
+  (company-quickhelp-mode 1)
+  (use-package pos-tip
+    :ensure t))
+
+
 ;; Diminish minor modes
 ;; - Hides selected minor modes from the modeline
 (use-package diminish
@@ -271,16 +287,6 @@
   :config (setq company-lsp-async t)
   :commands company-lsp)
 
-
-;; Typescript support
-(use-package tide
-  :ensure t
-  :after (typescript-mode company flycheck)
-  :hook ((typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)
-         (before-save . tide-format-before-save)))
-
-
 ;; Rust support
 (use-package toml-mode
   :ensure t)
@@ -318,22 +324,73 @@
   :config (add-to-list 'company-backends 'company-irony))
 
 
+
+;; Web-mode and typescript
 (use-package web-mode
   :ensure t
+  :mode (("\\.html?\\'" . web-mode)
+		 ("\\.php\\'" . web-mode)
+		 ("\\.scss\\'" . web-mode)
+		 ("\\.tsx\\'" . web-mode)
+		 ("\\.js\\'" . web-mode))
+		 ;;("\\.jsx\\'" . web-mode))
   :config
-  (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.php\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode)))
+  (setq web-mode-markup-indent-offset 2
+        web-mode-css-indent-offset 2
+        web-mode-code-indent-offset 2
+        web-mode-block-padding 2
+        web-mode-comment-style 2
+
+        web-mode-enable-css-colorization t
+        web-mode-enable-auto-pairing t
+        web-mode-enable-comment-keywords t
+        web-mode-enable-current-element-highlight t
+
+		;;web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))
+		))
+
+(use-package typescript-mode
+  :ensure t
+  :config
+  (setq typescript-indent-level 2)
+  (setq indent-tabs-mode nil))
+
+(use-package tide
+  :ensure t
+  :after (typescript-mode company flycheck)
+  :hook ((typescript-mode . tide-hl-identifier-mode)
+         (before-save . tide-format-before-save)))
+
+(use-package rjsx-mode
+  :ensure t
+  :config
+  (setq js-indent-level 2)
+  (setq indent-tabs-mode nil))
+
+;; Add newline and indent when expanding html tags
+(defun tag-expand ()
+  (interactive)
+  (if (and
+       (looking-at "[ \t]*<")
+       (looking-back ">[ \t]*"))
+      (progn (newline-and-indent)
+             (save-excursion (newline-and-indent))
+             (indent-according-to-mode))
+    (newline-and-indent)))
+
+(add-hook 'rjsx-mode-hook (lambda () (local-set-key (kbd "RET") 'tag-expand)))
 
 
+;; Zig mode
 (use-package zig-mode
   :ensure t)
-
-;; Load saved customizations from custom file
-(load-file custom-file)
 
 
 ;; Tex
 (setq TeX-parse-self t)
 (setq TeX-auto-save t)
 (setq-default TeX-master nil)
+
+
+;; Load saved customizations from custom file
+(load-file custom-file)
