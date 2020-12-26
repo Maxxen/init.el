@@ -13,6 +13,9 @@
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
 
+;; Spaces over tabs thanks
+(setq-default indent-tabs-mode nil)
+
 ;; Lock-files are not really neccessary
 (setq create-lockfiles nil)
 
@@ -66,12 +69,6 @@
 ;; shell (my-term-shell) path as arguments, thus always launching bash
 (advice-add 'ansi-term :before (lambda (&rest r) (interactive (list my-term-shell))))
 
-;; IDO mode
-(setq ido-enable-flex-matching nil)
-(setq ido-create-new-buffer 'always)
-(setq ido-everywhere t)
-(ido-mode 1)
-
 ;; Fix buffers
 (global-set-key (kbd "C-x C-b") 'ido-switch-buffer)
 (global-set-key (kbd "C-x b") 'ibuffer) ;; Replace crappy buffer-list with ibuffer
@@ -95,6 +92,41 @@
   (balance-windows)
   (other-window 1))
 (global-set-key (kbd "C-x 3") 'split-and-follow-v)
+
+(defun delete-window-and-center ()
+  (interactive)
+  (delete-window)
+  (balance-windows)
+(global-set-key (kbd "C-x 0") 'delete-window-and-center))
+
+;; Round to nearest word when wrapping lines
+(global-visual-line-mode 1)
+
+(defun cm-swap-buffer-with-prev-window ()
+  "Swap buffers of the current and the previous window. Cursor remains in the same buffer (but changes window)"
+  (interactive)
+  (progn
+    (switch-to-buffer (other-buffer))
+    (select-window (previous-window))
+    (switch-to-buffer (other-buffer))
+    (select-window (next-window))
+    (switch-to-buffer (other-buffer))
+    (select-window (previous-window))
+    (redraw-display)))
+(global-set-key (kbd "C-<") 'cm-swap-buffer-with-prev-window)
+
+(defun cm-swap-buffer-with-next-window ()
+  "Swap buffers of the current and the next window. Cursor remains in the same buffer (but changes window)"
+  (interactive)
+  (progn
+    (switch-to-buffer (other-buffer))
+    (select-window (next-window))
+    (switch-to-buffer (other-buffer))
+    (select-window (previous-window))
+    (switch-to-buffer (other-buffer))
+    (select-window (next-window))
+    (redraw-display)))
+(global-set-key (kbd "C->") 'cm-swap-buffer-with-next-window)
 
 ;; Backups
 ;; (setq make-backup-file nil)
@@ -125,22 +157,19 @@
 	     '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
+;; Set up use-package
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
 ;; Theme
 (use-package vscode-dark-plus-theme
   :config
   (load-theme 'vscode-dark-plus t))
 
-
 ;; C-style
-
 (setq c-default-style "stroustrup"
 	  c-basic-offset 4)
-
-;; Set up use-package
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
 
 
 ;; Org-mode tweaks
@@ -221,10 +250,51 @@
   :init
   (which-key-mode))
 
+
+;; IDO mode
+;;(setq ido-enable-flex-matching nil)
+;;(setq ido-create-new-buffer 'always)
+;;(setq ido-everywhere t)
+;;(ido-mode 1)
+
+;; Test out Ivy mode instead of IDO
+(use-package ivy
+  :ensure t
+  :config
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (setq enable-recursive-minibuffers t)
+  (setq ivy-extra-directories ())
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (global-set-key (kbd "<f6>") 'ivy-resume)  
+  (let ((done (where-is-internal #'ivy-done ivy-minibuffer-map t))
+        (alt  (where-is-internal #'ivy-alt-done ivy-minibuffer-map t)))
+    (define-key ivy-minibuffer-map done #'ivy-alt-done)
+    (define-key ivy-minibuffer-map alt  #'ivy-done)))
+
+(use-package counsel
+  :ensure t
+  :config
+  (counsel-mode 1)
+  (setq counsel-find-file-ignore-regexp
+        (concat
+         ;; File names beginning with # or .
+         "\\(?:\\`[#.]\\)"
+         ;; File names ending with # or ~
+         "\\|\\(?:\\`.+?[#~]\\'\\)")))
+
+;; Swiper
+;; - Show search results in minibuffer
+(use-package swiper
+  :ensure t
+  :config (global-set-key "\C-s" 'swiper))
+
 ;; Hungry deletion
 (use-package hungry-delete
   :ensure t
   :config (global-hungry-delete-mode))
+
+(setq delete-selection-mode 1)
 
 ;; Kill ring popup
 (use-package popup-kill-ring
@@ -392,5 +462,13 @@
 (setq-default TeX-master nil)
 
 
+(defun reload-dir-locals-for-current-buffer ()
+  "reload dir locals for the current buffer"
+  (interactive)
+  (let ((enable-local-variables :all))
+    (hack-dir-local-variables-non-file-buffer)))
+
 ;; Load saved customizations from custom file
 (load-file custom-file)
+
+
